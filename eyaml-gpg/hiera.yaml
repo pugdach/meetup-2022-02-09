@@ -1,0 +1,34 @@
+---
+version: 5
+
+defaults:
+  datadir: data
+  data_hash: yaml_data
+
+hierarchy:
+  - name: "yaml hierarchy"
+    lookup_key: eyaml_lookup_key
+    options:
+      gpg_gnupghome: /opt/puppetlabs/server/data/puppetserver/.gnupg
+      pkcs7_private_key: "/etc/puppetlabs/puppet/keys/private_key.pkcs7.pem"
+      pkcs7_public_key: "/etc/puppetlabs/puppet/keys/public_key.pkcs7.pem"
+    paths:
+      - "nodes/%{facts.networking.hostname}.yaml"
+      - "role/%{facts.external_facts.role}-%{facts.external_facts.env}.yaml"
+      - "role/%{facts.external_facts.role}.yaml"
+      - "os/%{facts.os.family}.yaml"
+      - "zone/%{facts.external_facts.zone}.yaml"
+      - "common.yaml"
+  - name: "Hiera-vault lookup"
+    lookup_key: hiera_vault
+    options:
+      confine_to_keys:
+        - '.*vault.*'
+        - '.*password.*'
+      ssl_verify: false
+      address: https://10.0.1.3:8200
+      token: /etc/vault_token
+      default_field: value
+      mounts:
+        puppet:
+          - "%{facts.networking.hostname}/"
